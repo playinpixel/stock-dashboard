@@ -1,0 +1,334 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface-hover: #1f2937;
+  --border: #30363d;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #484f58;
+  --green: #3fb950;
+  --green-dim: #1a3824;
+  --red: #f85149;
+  --red-dim: #3d1a1a;
+  --accent: #58a6ff;
+  --accent-dim: #1a2d4a;
+  --card-radius: 12px;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* ── Login ── */
+#login-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.login-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.login-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.logo-icon {
+  color: var(--green);
+  font-size: 22px;
+}
+
+.logo-icon.small {
+  font-size: 15px;
+}
+
+.logo-text {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+
+.login-subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.login-form label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.login-form input[type="email"] {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 15px;
+  padding: 12px 14px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+
+.login-form input[type="email"]:focus {
+  border-color: var(--accent);
+}
+
+.login-form input[type="email"]::placeholder {
+  color: var(--text-muted);
+}
+
+.login-error {
+  background: var(--red-dim);
+  border: 1px solid var(--red);
+  border-radius: 6px;
+  color: var(--red);
+  font-size: 13px;
+  padding: 8px 12px;
+}
+
+#login-btn {
+  background: var(--green);
+  border: none;
+  border-radius: 8px;
+  color: #0d1117;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 13px;
+  transition: opacity 0.15s, transform 0.1s;
+  margin-top: 4px;
+}
+
+#login-btn:hover {
+  opacity: 0.88;
+}
+
+#login-btn:active {
+  transform: scale(0.98);
+}
+
+/* ── Dashboard Header ── */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.dot-green {
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+}
+
+.dot-red {
+  background: var(--red);
+}
+
+/* ── Dashboard Main ── */
+.dashboard-main {
+  padding: 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-title {
+  margin-bottom: 24px;
+}
+
+.section-title h2 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.section-sub {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* ── Stock Grid ── */
+.stock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+/* ── Stock Card ── */
+.stock-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.2s, opacity 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.stock-card.unsubscribed {
+  opacity: 0.45;
+}
+
+.stock-card.unsubscribed .stock-price {
+  color: var(--text-muted);
+}
+
+.stock-card.subscribed-up {
+  border-color: var(--green);
+}
+
+.stock-card.subscribed-down {
+  border-color: var(--red);
+}
+
+.stock-card.subscribed-neutral {
+  border-color: var(--accent);
+}
+
+.card-top {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stock-symbol {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.stock-name {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.stock-price {
+  font-size: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+}
+
+.stock-change {
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.stock-change.positive { color: var(--green); }
+.stock-change.negative { color: var(--red); }
+.stock-change.neutral  { color: var(--text-muted); }
+
+/* ── Subscribe Button ── */
+.subscribe-btn {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  transition: background 0.15s, color 0.15s;
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+.subscribe-btn:hover {
+  background: var(--accent);
+  color: #0d1117;
+}
+
+.subscribe-btn.active {
+  background: var(--red-dim);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.subscribe-btn.active:hover {
+  background: var(--red);
+  color: #0d1117;
+}
+
+/* ── Flash Animations ── */
+@keyframes flash-up {
+  0%   { background: transparent; }
+  20%  { background: var(--green-dim); }
+  100% { background: transparent; }
+}
+
+@keyframes flash-down {
+  0%   { background: transparent; }
+  20%  { background: var(--red-dim); }
+  100% { background: transparent; }
+}
+
+.stock-price.flash-up {
+  animation: flash-up 0.6s ease-out forwards;
+}
+
+.stock-price.flash-down {
+  animation: flash-down 0.6s ease-out forwards;
+}

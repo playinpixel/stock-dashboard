@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StockWatch — Live Dashboard</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <!-- Login Screen -->
+  <div id="login-screen">
+    <div class="login-box">
+      <div class="login-logo">
+        <span class="logo-icon">&#9650;</span>
+        <span class="logo-text">StockWatch</span>
+      </div>
+      <p class="login-subtitle">Real-time market dashboard</p>
+      <div class="login-form">
+        <label for="email-input">Email address</label>
+        <input
+          type="email"
+          id="email-input"
+          placeholder="you@example.com"
+          autocomplete="email"
+        />
+        <div id="login-error" class="login-error" hidden></div>
+        <button id="login-btn">Enter Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Screen -->
+  <div id="dashboard-screen" hidden>
+    <header class="dashboard-header">
+      <div class="header-brand">
+        <span class="logo-icon small">&#9650;</span>
+        <span class="logo-text">StockWatch</span>
+      </div>
+      <div class="header-user">
+        <span id="user-email"></span>
+        <span id="connection-dot" class="dot dot-red" title="Disconnected"></span>
+      </div>
+    </header>
+
+    <main class="dashboard-main">
+      <div class="section-title">
+        <h2>Live Markets</h2>
+        <p class="section-sub">Subscribe to a stock to receive live price updates</p>
+      </div>
+
+      <div id="stock-grid" class="stock-grid">
+
+        <div class="stock-card unsubscribed" data-symbol="GOOG">
+          <div class="card-top">
+            <span class="stock-symbol">GOOG</span>
+            <span class="stock-name">Alphabet Inc.</span>
+          </div>
+          <div class="stock-price">--</div>
+          <div class="stock-change neutral">-- (--)</div>
+          <button class="subscribe-btn">Subscribe</button>
+        </div>
+
+        <div class="stock-card unsubscribed" data-symbol="TSLA">
+          <div class="card-top">
+            <span class="stock-symbol">TSLA</span>
+            <span class="stock-name">Tesla, Inc.</span>
+          </div>
+          <div class="stock-price">--</div>
+          <div class="stock-change neutral">-- (--)</div>
+          <button class="subscribe-btn">Subscribe</button>
+        </div>
+
+        <div class="stock-card unsubscribed" data-symbol="AMZN">
+          <div class="card-top">
+            <span class="stock-symbol">AMZN</span>
+            <span class="stock-name">Amazon.com, Inc.</span>
+          </div>
+          <div class="stock-price">--</div>
+          <div class="stock-change neutral">-- (--)</div>
+          <button class="subscribe-btn">Subscribe</button>
+        </div>
+
+        <div class="stock-card unsubscribed" data-symbol="META">
+          <div class="card-top">
+            <span class="stock-symbol">META</span>
+            <span class="stock-name">Meta Platforms, Inc.</span>
+          </div>
+          <div class="stock-price">--</div>
+          <div class="stock-change neutral">-- (--)</div>
+          <button class="subscribe-btn">Subscribe</button>
+        </div>
+
+        <div class="stock-card unsubscribed" data-symbol="NVDA">
+          <div class="card-top">
+            <span class="stock-symbol">NVDA</span>
+            <span class="stock-name">NVIDIA Corporation</span>
+          </div>
+          <div class="stock-price">--</div>
+          <div class="stock-change neutral">-- (--)</div>
+          <button class="subscribe-btn">Subscribe</button>
+        </div>
+
+        <div class="stock-card unsubscribed" data-symbol="AAPL">
+          <div class="card-top">
+            <span class="stock-symbol">AAPL</span>
+            <span class="stock-name">Apple Inc.</span>
+          </div>
+          <div class="stock-price">--</div>
+          <div class="stock-change neutral">-- (--)</div>
+          <button class="subscribe-btn">Subscribe</button>
+        </div>
+
+        <div class="stock-card unsubscribed" data-symbol="MSFT">
+          <div class="card-top">
+            <span class="stock-symbol">MSFT</span>
+            <span class="stock-name">Microsoft Corporation</span>
+          </div>
+          <div class="stock-price">--</div>
+          <div class="stock-change neutral">-- (--)</div>
+          <button class="subscribe-btn">Subscribe</button>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
