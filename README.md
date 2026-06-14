@@ -14,9 +14,9 @@ A live stock price dashboard where users register and log in, subscribe to stock
 
 ## Tech Stack
 
-- **Backend** — Node.js, Express, Socket.io, bcrypt
+- **Backend** — Node.js, Express, Socket.io, bcrypt, pg
 - **Frontend** — Vanilla HTML/CSS/JS (no framework, no build step)
-- **User storage** — `users.json` (auto-created on first run, gitignored)
+- **User storage** — PostgreSQL on Railway (auto-provisioned); falls back to `users.json` for local development
 
 ## Running Locally
 
@@ -27,6 +27,6 @@ npm start
 
 Then open [http://localhost:3000](http://localhost:3000).
 
-`users.json` is not included in the repo — it is created automatically by the server the first time a user registers. It stores bcrypt-hashed passwords and subscription lists.
+`users.json` is not included in the repo. Locally it is created automatically on first register. On Railway, PostgreSQL is used instead — the `users` table is created automatically on server startup.
 
 Alternatively, you can view the project deployed on [Railway](https://stock-dashboard-production-89f5.up.railway.app).
