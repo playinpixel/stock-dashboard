@@ -12,6 +12,92 @@ const PORT = process.env.PORT || 3000;
 const SALT_ROUNDS = 10;
 const USERS_FILE = path.join(__dirname, 'users.json');
 
+// ── Storage: PostgreSQL on Railway, users.json locally ─────────────
+const useDatabase = !!process.env.DATABASE_URL;
+let pool;
+
+if (useDatabase) {
+  const { Pool } = require('pg');
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
+  pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      email TEXT PRIMARY KEY,
+      password_hash TEXT NOT NULL,
+      subscribed_stocks TEXT[] DEFAULT '{}'
+    )
+  `)
+    .then(() => console.log('[DB] PostgreSQL connected'))
+    .catch(err => console.error('[DB] Setup error:', err));
+} else {
+  console.log('[DB] Using local users.json');
+}
+
+function loadUsers() {
+  try { return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8')); }
+  catch { return {}; }
+}
+
+function saveUsers(users) {
+  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+}
+
+async function dbGetUser(email) {
+  if (useDatabase) {
+    const res = await pool.query(
+      'SELECT password_hash, subscribed_stocks FROM users WHERE email = $1',
+      [email]
+    );
+    if (res.rows.length === 0) return null;
+    return { passwordHash: res.rows[0].password_hash, subscribedStocks: res.rows[0].subscribed_stocks };
+  } else {
+    const users = loadUsers();
+    const user = users[email];
+    if (!user) return null;
+    return { passwordHash: user.passwordHash, subscribedStocks: user.subscribedStocks || [] };
+  }
+}
+
+async function dbUserExists(email) {
+  if (useDatabase) {
+    const res = await pool.query('SELECT 1 FROM users WHERE email = $1', [email]);
+    return res.rows.length > 0;
+  } else {
+    return !!loadUsers()[email];
+  }
+}
+
+async function dbCreateUser(email, passwordHash) {
+  if (useDatabase) {
+    await pool.query(
+      'INSERT INTO users (email, password_hash, subscribed_stocks) VALUES ($1, $2, $3)',
+      [email, passwordHash, []]
+    );
+  } else {
+    const users = loadUsers();
+    users[email] = { passwordHash, subscribedStocks: [] };
+    saveUsers(users);
+  }
+}
+
+async function dbUpdateSubscriptions(email, subscribedStocks) {
+  if (useDatabase) {
+    await pool.query(
+      'UPDATE users SET subscribed_stocks = $1 WHERE email = $2',
+      [[...subscribedStocks], email]
+    );
+  } else {
+    const users = loadUsers();
+    if (users[email]) {
+      users[email].subscribedStocks = [...subscribedStocks];
+      saveUsers(users);
+    }
+  }
+}
+
+// ── Stocks ─────────────────────────────────────────────────────────
 const STOCKS = {
   GOOG: { base: 175.00, volatility: 3.50 },
   TSLA: { base: 250.00, volatility: 5.00 },
@@ -25,20 +111,11 @@ const STOCKS = {
 };
 
 const sessions = new Map();       // socket.id → { email, subscribedStocks: Set }
-const activeSessions = new Map(); // email → socket.id (one active socket per user)
-const currentPrices = {};
+const activeSessions = new Map(); // email → socket.id
 
+const currentPrices = {};
 for (const [symbol, config] of Object.entries(STOCKS)) {
   currentPrices[symbol] = { price: config.base, change: 0, changePercent: 0 };
-}
-
-function loadUsers() {
-  try { return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8')); }
-  catch { return {}; }
-}
-
-function saveUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
 }
 
 function tickPrices() {
@@ -61,19 +138,18 @@ setInterval(tickPrices, 1000);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// ── Socket.io ──────────────────────────────────────────────────────
 io.on('connection', (socket) => {
 
   socket.on('register', async ({ email, password }) => {
     if (!email || !password) {
       return socket.emit('auth_error', { message: 'Email and password are required.' });
     }
-    const users = loadUsers();
-    if (users[email]) {
+    if (await dbUserExists(email)) {
       return socket.emit('auth_error', { message: 'An account with this email already exists.' });
     }
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-    users[email] = { passwordHash, subscribedStocks: [] };
-    saveUsers(users);
+    await dbCreateUser(email, passwordHash);
     socket.emit('register_ack');
     console.log(`[+] Registered: ${email}`);
   });
@@ -82,8 +158,7 @@ io.on('connection', (socket) => {
     if (!email || !password) {
       return socket.emit('auth_error', { message: 'Email and password are required.' });
     }
-    const users = loadUsers();
-    const user = users[email];
+    const user = await dbGetUser(email);
     if (!user) {
       return socket.emit('auth_error', { message: 'No account found with this email.' });
     }
@@ -92,7 +167,7 @@ io.on('connection', (socket) => {
       return socket.emit('auth_error', { message: 'Incorrect password.' });
     }
 
-    // Force logout any existing active session for this email
+    // Force logout existing session
     if (activeSessions.has(email)) {
       const oldSocketId = activeSessions.get(email);
       const oldSocket = io.sockets.sockets.get(oldSocketId);
@@ -100,9 +175,7 @@ io.on('connection', (socket) => {
         oldSocket.emit('force_logout', { reason: 'You were signed in from another location.' });
         const oldSession = sessions.get(oldSocketId);
         if (oldSession) {
-          for (const sym of oldSession.subscribedStocks) {
-            oldSocket.leave(`stock:${sym}`);
-          }
+          for (const sym of oldSession.subscribedStocks) oldSocket.leave(`stock:${sym}`);
           sessions.delete(oldSocketId);
         }
       }
@@ -113,9 +186,7 @@ io.on('connection', (socket) => {
     sessions.set(socket.id, { email, subscribedStocks: new Set(subscribedStocks) });
     activeSessions.set(email, socket.id);
 
-    for (const symbol of subscribedStocks) {
-      socket.join(`stock:${symbol}`);
-    }
+    for (const symbol of subscribedStocks) socket.join(`stock:${symbol}`);
 
     socket.emit('login_ack', { email, subscribedStocks, currentPrices });
     console.log(`[+] Login: ${email}`);
@@ -124,46 +195,32 @@ io.on('connection', (socket) => {
   socket.on('logout', () => {
     const session = sessions.get(socket.id);
     if (!session) return;
-    if (activeSessions.get(session.email) === socket.id) {
-      activeSessions.delete(session.email);
-    }
-    for (const sym of session.subscribedStocks) {
-      socket.leave(`stock:${sym}`);
-    }
+    if (activeSessions.get(session.email) === socket.id) activeSessions.delete(session.email);
+    for (const sym of session.subscribedStocks) socket.leave(`stock:${sym}`);
     sessions.delete(socket.id);
     console.log(`[-] Logout: ${session.email}`);
   });
 
-  socket.on('subscribe', ({ symbol }) => {
+  socket.on('subscribe', async ({ symbol }) => {
     const session = sessions.get(socket.id);
     if (!session) return socket.emit('auth_error', { message: 'Not logged in.' });
     if (!STOCKS[symbol]) return socket.emit('auth_error', { message: `Unknown symbol: ${symbol}` });
 
     session.subscribedStocks.add(symbol);
     socket.join(`stock:${symbol}`);
-
-    const users = loadUsers();
-    if (users[session.email]) {
-      users[session.email].subscribedStocks = [...session.subscribedStocks];
-      saveUsers(users);
-    }
+    await dbUpdateSubscriptions(session.email, session.subscribedStocks);
 
     socket.emit('subscribe_ack', { symbol, ...currentPrices[symbol] });
     console.log(`[~] ${session.email} subscribed to ${symbol}`);
   });
 
-  socket.on('unsubscribe', ({ symbol }) => {
+  socket.on('unsubscribe', async ({ symbol }) => {
     const session = sessions.get(socket.id);
     if (!session) return;
 
     session.subscribedStocks.delete(symbol);
     socket.leave(`stock:${symbol}`);
-
-    const users = loadUsers();
-    if (users[session.email]) {
-      users[session.email].subscribedStocks = [...session.subscribedStocks];
-      saveUsers(users);
-    }
+    await dbUpdateSubscriptions(session.email, session.subscribedStocks);
 
     console.log(`[~] ${session.email} unsubscribed from ${symbol}`);
   });
@@ -171,9 +228,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     const session = sessions.get(socket.id);
     if (session) {
-      if (activeSessions.get(session.email) === socket.id) {
-        activeSessions.delete(session.email);
-      }
+      if (activeSessions.get(session.email) === socket.id) activeSessions.delete(session.email);
       sessions.delete(socket.id);
       console.log(`[-] Disconnected: ${session.email}`);
     }
