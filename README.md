@@ -5,7 +5,7 @@ A live stock price dashboard where users log in with their email, subscribe to s
 ## Features
 
 - **Email login** — no password, just enter your email to get started
-- **7 supported stocks** — GOOG, TSLA, AMZN, META, NVDA, AAPL, MSFT
+- **9 supported stocks** — GOOG, TSLA, AMZN, META, NVDA, AAPL, MSFT, NFLX, AMD
 - **Live price updates** — prices update every second via WebSockets (not actual live prices, random values)
 - **Per-user subscriptions** — each user independently chooses which stocks to follow
 - **Multi-user** — multiple dashboards update asynchronously in real time

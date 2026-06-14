@@ -15,7 +15,9 @@ const STOCKS = {
   META: { base: 510.00, volatility: 10.20 },
   NVDA: { base: 870.00, volatility: 17.40 },
   AAPL: { base: 192.00, volatility: 3.84 },
-  MSFT: { base: 420.00, volatility: 8.40 }
+  MSFT: { base: 420.00, volatility: 8.40 },
+  NFLX: { base: 640.00, volatility: 12.80 },
+  AMD:  { base: 160.00, volatility: 3.20 }
 };
 
 const sessions = new Map();
