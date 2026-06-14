@@ -30,8 +30,8 @@ body {
   min-height: 100vh;
 }
 
-/* ── Login ── */
-#login-screen {
+/* ── Auth Screen ── */
+#auth-screen {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -76,9 +76,38 @@ body {
 .login-subtitle {
   color: var(--text-secondary);
   font-size: 14px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
+/* ── Auth Tabs ── */
+.auth-tabs {
+  display: flex;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+  margin-bottom: 24px;
+}
+
+.auth-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.auth-tab.active {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+/* ── Login Form ── */
 .login-form {
   display: flex;
   flex-direction: column;
@@ -92,7 +121,9 @@ body {
   color: var(--text-secondary);
 }
 
-.login-form input[type="email"] {
+.login-form input[type="email"],
+.login-form input[type="password"],
+.login-form input[type="text"] {
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -104,12 +135,38 @@ body {
   transition: border-color 0.15s;
 }
 
-.login-form input[type="email"]:focus {
+.login-form input:focus {
   border-color: var(--accent);
 }
 
-.login-form input[type="email"]::placeholder {
+.login-form input::placeholder {
   color: var(--text-muted);
+}
+
+.password-wrap {
+  position: relative;
+}
+
+.password-wrap input {
+  padding-right: 44px;
+}
+
+.toggle-pw {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  line-height: 1;
+}
+
+.toggle-pw:hover {
+  color: var(--text-secondary);
 }
 
 .login-error {
@@ -121,7 +178,16 @@ body {
   padding: 8px 12px;
 }
 
-#login-btn {
+.auth-success {
+  background: var(--green-dim);
+  border: 1px solid var(--green);
+  border-radius: 6px;
+  color: var(--green);
+  font-size: 13px;
+  padding: 8px 12px;
+}
+
+#auth-btn {
   background: var(--green);
   border: none;
   border-radius: 8px;
@@ -134,13 +200,64 @@ body {
   margin-top: 4px;
 }
 
-#login-btn:hover {
-  opacity: 0.88;
+#auth-btn:hover { opacity: 0.88; }
+#auth-btn:active { transform: scale(0.98); }
+#auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Force Logout Overlay ── */
+#force-logout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
 }
 
-#login-btn:active {
-  transform: scale(0.98);
+.force-logout-box {
+  background: var(--surface);
+  border: 1px solid var(--red);
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
+
+.force-logout-icon {
+  font-size: 36px;
+  color: var(--red);
+}
+
+.force-logout-box h3 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.force-logout-box p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+#force-logout-ok {
+  background: var(--red);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 8px;
+  padding: 10px;
+  transition: opacity 0.15s;
+}
+
+#force-logout-ok:hover { opacity: 0.85; }
 
 /* ── Dashboard Header ── */
 .dashboard-header {
@@ -164,7 +281,7 @@ body {
 .header-user {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   font-size: 14px;
   color: var(--text-secondary);
 }
@@ -184,6 +301,23 @@ body {
 
 .dot-red {
   background: var(--red);
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.logout-btn:hover {
+  border-color: var(--red);
+  color: var(--red);
 }
 
 /* ── Dashboard Main ── */
@@ -233,21 +367,9 @@ body {
   opacity: 0.45;
 }
 
-.stock-card.unsubscribed .stock-price {
-  color: var(--text-muted);
-}
-
-.stock-card.subscribed-up {
-  border-color: var(--green);
-}
-
-.stock-card.subscribed-down {
-  border-color: var(--red);
-}
-
-.stock-card.subscribed-neutral {
-  border-color: var(--accent);
-}
+.stock-card.subscribed-up   { border-color: var(--green); }
+.stock-card.subscribed-down { border-color: var(--red); }
+.stock-card.subscribed-neutral { border-color: var(--accent); }
 
 .card-top {
   display: flex;
@@ -327,10 +449,5 @@ body {
   100% { background: transparent; }
 }
 
-.stock-price.flash-up {
-  animation: flash-up 0.6s ease-out forwards;
-}
-
-.stock-price.flash-down {
-  animation: flash-down 0.6s ease-out forwards;
-}
+.stock-price.flash-up   { animation: flash-up   0.6s ease-out forwards; }
+.stock-price.flash-down { animation: flash-down 0.6s ease-out forwards; }
