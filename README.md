@@ -29,13 +29,4 @@ Then open [http://localhost:3000](http://localhost:3000).
 
 `users.json` is not included in the repo — it is created automatically by the server the first time a user registers. It stores bcrypt-hashed passwords and subscription lists.
 
-## Deploying to Railway
-
-1. Push this repo to GitHub
-2. Go to [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**
-3. Select this repo — Railway auto-detects Node.js and runs `npm start`
-4. Your app is live at the generated Railway URL
-
-Live deployment: [stock-dashboard-production-89f5.up.railway.app](https://stock-dashboard-production-89f5.up.railway.app)
-
-> **Note:** `users.json` is ephemeral on Railway and will be wiped on each redeploy. For persistent user storage in production, swap it out for a database (Railway offers a free PostgreSQL addon).
+Alternatively, you can view the project deployed on [Railway](https://stock-dashboard-production-89f5.up.railway.app).
