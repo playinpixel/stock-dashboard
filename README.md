@@ -26,4 +26,4 @@ npm start
 
 Then open [http://localhost:3000](http://localhost:3000).
 
-alternatively, you can view the project deployed on railway - stock-dashboard-production-89f5.up.railway.app
+alternatively, you can view the project deployed on [railway](stock-dashboard-production-89f5.up.railway.app)
